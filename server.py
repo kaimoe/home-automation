@@ -1,24 +1,21 @@
 #!/usr/bin/env python3
-#from gpiozero import RGBLED
-#from colorzero import Color
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import json
-import logging
-
 PORT=8080
 
 LED_RED = 17
 LED_GREEN = 22
 LED_BLUE = 24
+#--------------------#
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
+import logging
+from lights import LED
 
 paths = ['lights']
 
-LED = 0
-LED_bright = 0
+led = 0
 
 def init():
-	LED = RGBLED(LED_RED, LED_GREEN, LED_BLUE)
-	LED.color = Color('white')
+	led = LED(LED_RED, LED_GREEN, LED_BLUE)
 
 class S(BaseHTTPRequestHandler):
 	def _set_headers(self):
@@ -50,12 +47,11 @@ class S(BaseHTTPRequestHandler):
 			return
 
 		if self.path == 'lights':
-			handleLights(message[payload])
+			led.handle(message[payload])
 
 
 		self._set_headers()
 
-def handleLights(payload):
 
 
 def run(server_class=HTTPServer, handler_class=S, port=8080):
