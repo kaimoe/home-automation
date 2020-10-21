@@ -25,10 +25,8 @@ class LED:
 	def handle(self, payload):
 		#handle brightness
 		if payload in LED_bright_terms:
-			new_bright = LED_bright_terms[payload]
-			bright_diff = new_bright / self.bright
-			self.applyBright(bright_diff)
-			self.bright = new_bright
+			self.bright = LED_bright_terms[payload]
+			self.changeLights(self.color, LightChanges.transition)
 			return
 
 		#handle on/off
@@ -49,7 +47,7 @@ class LED:
 		except ValueError:
 			#handle unknown color/invalid input
 			return
-		self.changeLights(color, LightChanges.instant)
+		self.changeLights(color, LightChanges.transition)
 
 	def changeLights(self, type, color=self.led.color):
 		switcher = {
@@ -60,9 +58,8 @@ class LED:
 		switcher.get(type, lambda: False)(color)
 
 	def setColor(self, color):
-		self.led.color = color
-		self.color = self.led.color
-		self.applyBright(this.bright)
+		self.color = color
+		self.led.color = Color(tuple(self.bright*x for x in self.color))
 
 	def chgTrans(self, new_color):
 		n = REFRESH_RATE * TRANSITION_DURATION
@@ -78,6 +75,3 @@ class LED:
 		#x = threading.Thread(target=thread_function, args=(1,))
     	#x.start()
 		pass
-
-	def applyBright(self, b):
-		self.led.color = Color(tuple(b*x for x in LED.color))
