@@ -1,6 +1,6 @@
 from gpiozero import RGBLED
 from colorzero import Color
-import enum import Enum
+from enum import Enum
 import asyncio
 from time import sleep
 
