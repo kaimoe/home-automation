@@ -8,14 +8,14 @@ LED_BLUE = 24
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import logging
+
 from lights import LED
 
-paths = ['lights']
+paths = ['/lights']
 
-led = 0
-
-def init():
-	led = LED(LED_RED, LED_GREEN, LED_BLUE)
+def initHandler(handler_class):
+	handler_class.led = LED(LED_RED, LED_GREEN, LED_BLUE)
+	return handler_class
 
 class S(BaseHTTPRequestHandler):
 	def _set_headers(self):
@@ -33,22 +33,22 @@ class S(BaseHTTPRequestHandler):
 		return
 
 	def do_POST(self):
-		if ctype != 'application/json':
+		if self.headers['Content-Type'] != 'application/json':
 			self._set_empty()
 			return
 
 		length = int(self.headers['Content-Length']) # <--- Gets the size of data
-		message = json.loads(self.rfile.read(length)) # <--- Gets the data itself
-		logging.info('POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n',
-			str(self.path), str(self.headers), post_data.decode('utf-8'))
+		data = json.loads(self.rfile.read(length)) # <--- Gets the data itself
+		logging.info('POST request,\nPath: %s\nHeaders:\n%s\nBody:\n%s\n',
+			str(self.path), str(self.headers), data)
 
 		if self.path not in paths:
 			self._set_empty()
 			return
 
-		if self.path == 'lights':
-			led.handle(message[payload])
-
+		if self.path == '/lights':
+			self.led.handle(data['payload'])
+			pass
 
 		self._set_headers()
 
@@ -57,7 +57,7 @@ class S(BaseHTTPRequestHandler):
 def run(server_class=HTTPServer, handler_class=S, port=8080):
 	logging.basicConfig(level=logging.INFO)
 	server_address = ('', port)
-	httpd = server_class(server_address, handler_class)
+	httpd = server_class(server_address, initHandler(handler_class))
 	logging.info('Starting httpd...\n')
 	try:
 		httpd.serve_forever()
@@ -68,8 +68,6 @@ def run(server_class=HTTPServer, handler_class=S, port=8080):
 
 if __name__ == '__main__':
 	from sys import argv
-
-	init()
 
 	if len(argv) == 2:
 		run(port=int(argv[1]))
