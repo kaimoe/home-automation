@@ -15,3 +15,4 @@ https://gpiozero.readthedocs.io/en/stable/api_output.html#rgbled
 https://gpiozero.readthedocs.io/en/stable/recipes.html#full-color-led
 https://www.w3.org/TR/css-color-3/#svg-color
 https://jasperproject.github.io/documentation/
+https://krazydad.com/tutorials/makecolors.php

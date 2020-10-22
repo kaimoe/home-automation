@@ -46,12 +46,16 @@ class S(BaseHTTPRequestHandler):
 			self._set_empty()
 			return
 
+		success = False
+
 		if self.path == '/lights':
-			self.led.handle(data['payload'])
-			pass
+			success = self.led.handle(data['payload'])
+
+		if !success:
+			self._set_empty()
+			return
 
 		self._set_headers()
-
 
 
 def run(server_class=HTTPServer, handler_class=S, port=8080):

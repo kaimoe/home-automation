@@ -3,10 +3,12 @@ from colorzero import Color
 from enum import Enum
 import asyncio
 from time import sleep
+from threading import Thread
+from math import sin
 
 REFRESH_RATE = 10
-
 TRANSITION_DURATION = 1
+FADE_DURATION = 3
 
 LED_bright_terms = {
 	'bright': 1.0, 'full': 1.0,
@@ -20,6 +22,8 @@ class LED:
 	def __init__(self, red, green, blue):
 		self.led = RGBLED(red, green, blue)
 		self.bright = 1
+		self.thread = Thread()
+		self.stop_thread = False
 		self.changeLights(LightChanges.instant, 'white')
 		print('lights init')
 
@@ -28,30 +32,45 @@ class LED:
 		if payload in LED_bright_terms:
 			print('brightness')
 			self.bright = LED_bright_terms[payload]
-			self.changeLights(LightChanges.transition, self.color)
-			return
+			self.changeLights(LightChanges.instant, self.color)
+			return True
 
-		#handle on/off
+		#kill old thread
+		if self.thread.is_alive():
+			print('stop thread')
+			killThread()
+
+		#handle on/off/stop
 		if payload == 'off':
 			print('off')
 			self.led.off()
-			return
+			return True
 		if payload == 'on':
 			print('on')
 			self.led.color = self.color
-			return
+			return True
+		if payload == 'stop':
+			print('stop')
+			self.led.color = self.led.color #NOTE for pulse, no idea if this works lol
+			return True
+
+		change_type = LightChanges.transition
+		if 'pulse' in payload:
+			payload = payload.replace('pulse', '')
+			change_type = LightChanges.pulse
 
 		#handle color
-		self.changeLights(LightChanges.transition, payload)
+		self.thread = Thread(target=self.changeLights, args=(change_type, payload), daemon=True)
+		self.thread.start()
+		return True
 
 	def changeLights(self, type, color_str=''):
 		color = 0
 		try:
 			color = Color(color_str)
 		except ValueError:
-			#handle unknown color/invalid input
-			return
-		print('change type {} to {}'.format(type, color.rgb))
+			return False
+		print('change type {} to {}{}{}'.format(type, color, color.rgb, Color('white')))
 		switcher = {
 			LightChanges.instant: self.setColor,
 			LightChanges.transition: self.chgTrans,
@@ -59,18 +78,21 @@ class LED:
 			LightChanges.rainbow: self.chgRain #TODO
 		}
 		switcher.get(type, lambda x: False)(color)
+		return True
 
 	def setColor(self, color):
 		self.color = color
 		self.led.color = Color(tuple(self.bright*x for x in self.color))
-		print('set color to {}'.format(color.rgb))
+		print('set color to {}{}{}'.format(color, color.rgb, Color('white')))
 
 	def chgTrans(self, new_color):
 		N = REFRESH_RATE * TRANSITION_DURATION
+		#total color difference
 		diff = []
-		for n, c in zip(new_color, self.color):
+		for n, c in zip(new_color, self.led.color):
 			diff.append(n - c)
 
+		#color change per update
 		step = tuple(x/N for x in diff)
 		for _ in range(N-1):
 			step_color = []
@@ -80,8 +102,27 @@ class LED:
 			sleep(1/REFRESH_RATE)
 		self.setColor(new_color)
 
-	def chgPulse(self, color):#TODO
+	def chgPulse(self, color):
+		print('pulsing on {}{}{}'.format(color, color.rgb, Color('white')))
+		self.led.pulse(fade_in_time=FADE_DURATION, fade_out_time=FADE_DURATION, on_color=color)
 
-		#x = threading.Thread(target=thread_function, args=(1,))
-    	#x.start()
-		pass
+	def chgRain(self, _):#TODO
+		freq1, freq2, freq3 = .3, .3, .3
+		ph1, ph2, ph3 = 0, 2, 4
+		center, width = 128, 127
+		#center, width = 230, 25 #for pastels
+		length = 22
+		while self.stop_thread is not True:
+			for i in range(length):
+				if self.stop_thread is not True:
+					break
+				red = sin(freq1*i + ph1) * width + center
+				green = sin(freq2*i + ph2) * width + center
+				blue = sin(freq3*i + ph3) * width + center
+				self.setColor(Color(red, green, blue))
+
+
+	def killThread(self):
+		self.stop_thread = True
+		self.thread.join()
+		self.stop_thread = False
