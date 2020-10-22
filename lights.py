@@ -38,7 +38,7 @@ class LED:
 		#kill old thread
 		if self.thread.is_alive():
 			print('stop thread')
-			killThread()
+			self.killThread()
 
 		#handle on/off/stop
 		if payload == 'off':
@@ -51,7 +51,7 @@ class LED:
 			return True
 		if payload == 'stop':
 			print('stop')
-			self.led.color = self.led.color #NOTE for pulse, no idea if this works lol
+			self.led.color = self.led.color
 			return True
 
 		change_type = LightChanges.transition
@@ -63,26 +63,27 @@ class LED:
 
 		elif 'rainbow' in payload:
 			change_type = LightChanges.rainbow
+			payload = 'black'
 
 		#handle color
 		self.thread = Thread(target=self.changeLights, args=(change_type, payload), daemon=True)
 		self.thread.start()
 		return True
 
-	def changeLights(self, type, color_str=''):
+	def changeLights(self, type, payload='black'):
 		color = 0
 		try:
-			color = Color(color_str)
+			color = Color(payload)
 		except ValueError:
 			return False
 		print('change type {} to {}{}{}'.format(type, color, color.rgb, Color('white')))
 		switcher = {
 			LightChanges.instant: self.setColor,
 			LightChanges.transition: self.chgTrans,
-			LightChanges.pulse: self.chgPulse, #TODO
-			LightChanges.rainbow: self.chgRain #TODO
+			LightChanges.pulse: self.chgPulse,
+			LightChanges.rainbow: self.chgRain
 		}
-		switcher.get(type, lambda x: False)(color)
+		switcher.get(type, lambda x: print('invalid input'))(color)
 		return True
 
 	def setColor(self, color):
@@ -112,9 +113,9 @@ class LED:
 		print('pulsing on {}{}{}'.format(color, color.rgb, Color('white')))
 		self.led.pulse(fade_in_time=FADE_DURATION, fade_out_time=FADE_DURATION, on_color=color)
 
-	def chgRain(self, _):#TODO
+	def chgRain(self, _):
 		print('running rainbow')
-		freq1, freq2, freq3 = .3, .3, .3
+		freq1, freq2, freq3 = .03, .03, .03
 		ph1, ph2, ph3 = 0, 2, 4
 		center, width = 128, 127
 		#center, width = 230, 25 #for pastels
@@ -127,7 +128,7 @@ class LED:
 				green = sin(freq2*i + ph2) * width + center
 				blue = sin(freq3*i + ph3) * width + center
 				self.setColor(Color(red, green, blue))
-				sleep(1/REFRESH_RATE)
+				sleep((1/REFRESH_RATE)*2)
 
 	def killThread(self):
 		self.stop_thread = True
