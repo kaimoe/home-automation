@@ -8,7 +8,7 @@ from math import sin
 
 REFRESH_RATE = 10
 TRANSITION_DURATION = 1
-FADE_DURATION = 3
+FADE_DURATION = 5
 
 LED_bright_terms = {
 	'bright': 1.0, 'full': 1.0,
@@ -57,7 +57,12 @@ class LED:
 		change_type = LightChanges.transition
 		if 'pulse' in payload:
 			payload = payload.replace('pulse', '')
+			if payload == '':
+				payload = self.color
 			change_type = LightChanges.pulse
+
+		elif 'rainbow' in payload:
+			change_type = LightChanges.rainbow
 
 		#handle color
 		self.thread = Thread(target=self.changeLights, args=(change_type, payload), daemon=True)
@@ -91,6 +96,7 @@ class LED:
 		diff = []
 		for n, c in zip(new_color, self.led.color):
 			diff.append(n - c)
+		self.color = self.led.color
 
 		#color change per update
 		step = tuple(x/N for x in diff)
