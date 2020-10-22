@@ -113,6 +113,7 @@ class LED:
 		self.led.pulse(fade_in_time=FADE_DURATION, fade_out_time=FADE_DURATION, on_color=color)
 
 	def chgRain(self, _):#TODO
+		print('running rainbow')
 		freq1, freq2, freq3 = .3, .3, .3
 		ph1, ph2, ph3 = 0, 2, 4
 		center, width = 128, 127
@@ -120,13 +121,13 @@ class LED:
 		length = 22
 		while self.stop_thread is not True:
 			for i in range(length):
-				if self.stop_thread is not True:
+				if self.stop_thread is True:
 					break
 				red = sin(freq1*i + ph1) * width + center
 				green = sin(freq2*i + ph2) * width + center
 				blue = sin(freq3*i + ph3) * width + center
 				self.setColor(Color(red, green, blue))
-
+				sleep(1/REFRESH_RATE)
 
 	def killThread(self):
 		self.stop_thread = True
