@@ -51,7 +51,7 @@ class S(BaseHTTPRequestHandler):
 		if self.path == '/lights':
 			success = self.led.handle(data['payload'])
 
-		if !success:
+		if not success:
 			self._set_empty()
 			return
 
