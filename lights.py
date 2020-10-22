@@ -6,7 +6,7 @@ from time import sleep
 from threading import Thread
 from math import sin
 
-REFRESH_RATE = 10
+REFRESH_RATE = 30
 TRANSITION_DURATION = 1
 FADE_DURATION = 5
 

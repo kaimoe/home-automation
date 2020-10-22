@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 PORT=8080
 
-LED_RED = 17
+LED_RED = 27
 LED_GREEN = 22
-LED_BLUE = 24
+LED_BLUE = 17
 #--------------------#
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
