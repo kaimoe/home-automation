@@ -1,4 +1,6 @@
-import requests
+from urllib2 import Request, urlopen
+import json
+import string
 
 DEST_IP = 'localhost'
 PORT = 8080
@@ -15,4 +17,10 @@ def isValid(text):
 	return bool(colortext)
 
 def handle(text, mic, profile):
-	r = requests.post('{}:{}/lights'.format(DEST_IP, PORT), data={'payload': colortext})
+	data = json.dumps({payload: string.join(text.split(), '')})
+	headers = {'Content-Type': 'application/json'}
+	req = Request('http://'+DEST_IP+':'+str(PORT)+'/lights', data, headers)
+    try:
+        res = urlopen(req)
+    except:
+        mic.say("Did not understand")
