@@ -17,11 +17,13 @@ def isValid(text):
 def handle(text, mic, profile):
 	input = text.lower().split()
 	colortext = ''.join([x for x in input if x not in non_color_words])
+	if not colortext:
+		mic.say('What color?')
+		colortext = mic.activeListen().lower().replace('', '')
 	data = json.dumps({'payload': colortext})
 	headers = {'Content-Type': 'application/json'}
 	req = Request('http://'+DEST_IP+':'+str(PORT)+'/lights', data, headers)
 	try:
 		res = urlopen(req)
-		mic.say('')
 	except:
 		mic.say("Did not understand")
