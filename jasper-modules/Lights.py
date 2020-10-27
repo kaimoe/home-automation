@@ -12,7 +12,7 @@ non_color_words = ['lighting','lights', 'light', 'make', 'turn', 'set', 'switch'
 colortext = ''
 
 def isValid(text):
-	return bool(re.search(r'\blight\b', text, re.IGNORECASE))
+	return bool(re.search(r'light', text, re.IGNORECASE))
 
 def handle(text, mic, profile):
 	input = text.split()
