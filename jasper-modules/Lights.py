@@ -15,7 +15,7 @@ def isValid(text):
 	return bool(re.search(r'light', text, re.IGNORECASE))
 
 def handle(text, mic, profile):
-	input = text.split()
+	input = text.lower().split()
 	colortext = ''.join([x for x in input if x not in non_color_words])
 	data = json.dumps({'payload': colortext})
 	headers = {'Content-Type': 'application/json'}
