@@ -41,7 +41,7 @@ class LED:
 			self.killThread()
 
 		#handle on/off/stop
-		if payload == 'off':
+		if payload == 'off' or payload == 'of':
 			print('off')
 			self.led.off()
 			return True
