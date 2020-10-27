@@ -5,7 +5,7 @@ import re
 DEST_IP = 'localhost'
 PORT = 8080
 
-WORDS = ['LIGHT', 'LIGHTS', 'LIGHTING']
+WORDS = ['LIGHT', 'LIGHTS', 'LIGHTING', 'PULSE', 'RAINBOW', 'ON', 'OFF', 'STOP', 'DIM', 'BRIGHT', 'HALF', 'FULL', 'LOW''BLUE', 'RED', 'GREEN', 'YELLOW', 'ORANGE', 'PURPLE', 'WHITE', 'PINK', 'CYAN', 'DARK']
 
 non_color_words = ['lighting','lights', 'light', 'make', 'turn', 'set', 'switch', 'the', 'to', 'please']
 
@@ -22,5 +22,6 @@ def handle(text, mic, profile):
 	req = Request('http://'+DEST_IP+':'+str(PORT)+'/lights', data, headers)
 	try:
 		res = urlopen(req)
+		mic.say('')
 	except:
 		mic.say("Did not understand")
