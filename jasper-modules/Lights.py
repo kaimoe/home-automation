@@ -17,7 +17,7 @@ def isValid(text):
 	return bool(colortext)
 
 def handle(text, mic, profile):
-	data = json.dumps({payload: string.join(text.split(), '')})
+	data = json.dumps({'payload': string.join(text.split(), '')})
 	headers = {'Content-Type': 'application/json'}
 	req = Request('http://'+DEST_IP+':'+str(PORT)+'/lights', data, headers)
 	try:
