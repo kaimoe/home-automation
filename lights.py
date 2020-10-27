@@ -119,7 +119,7 @@ class LED:
 		ph1, ph2, ph3 = 0, 2, 4
 		center, width = 128, 127
 		#center, width = 230, 25 #for pastels
-		length = 22
+		length = 220
 		while self.stop_thread is not True:
 			for i in range(length):
 				if self.stop_thread is True:
