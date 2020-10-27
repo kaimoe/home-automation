@@ -12,12 +12,12 @@ non_color_words = ['lighting','lights', 'light', 'make', 'turn', 'set', 'switch'
 colortext = ''
 
 def isValid(text):
-	input = text.lower().split()
-	colortext = ''.join([x for x in input if x not in non_color_words])
-	return bool(colortext)
+	return bool(re.search(r'\blight\b', text, re.IGNORECASE))
+	#colortext = ''.join([x for x in input if x not in non_color_words])
 
 def handle(text, mic, profile):
-	data = json.dumps({'payload': string.join(text.split(), '')})
+	payload = ''.join(text.split())
+	data = json.dumps({'payload': payload})
 	headers = {'Content-Type': 'application/json'}
 	req = Request('http://'+DEST_IP+':'+str(PORT)+'/lights', data, headers)
 	try:
