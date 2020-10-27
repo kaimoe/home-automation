@@ -1,6 +1,6 @@
 from urllib2 import Request, urlopen
 import json
-import string
+import re
 
 DEST_IP = 'localhost'
 PORT = 8080
