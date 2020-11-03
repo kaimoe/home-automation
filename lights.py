@@ -19,51 +19,59 @@ LED_bright_terms = {
 LightChanges = Enum('LightChanges', 'instant transition pulse rainbow')
 
 class LED:
-	def __init__(self, red, green, blue):
+	def __init__(self, red, green, blue, debug=False):
 		self.led = RGBLED(red, green, blue)
 		self.bright = 1
 		self.thread = Thread()
 		self.stop_thread = False
 		self.changeLights(LightChanges.instant, 'white')
-		print('lights init')
+		self.debug = debug
+		dprint('lights init')
 
 	def handle(self, payload):
 		#handle brightness
 		if payload in LED_bright_terms:
-			print('brightness')
+			dprint('brightness')
 			self.bright = LED_bright_terms[payload]
 			self.changeLights(LightChanges.instant, self.color)
 			return True
 
 		#kill old thread
 		if self.thread.is_alive():
-			print('stop thread')
+			dprint('stop thread')
 			self.killThread()
 
-		#handle on/off/stop
-		if payload == 'off' or payload == 'of':
-			print('off')
-			self.led.off()
+
+		change_type = LightChanges.transition
+		#handle toggle/on/off/stop
+		if payload == 'toggle':
+			dprint('toggle')
+			if self.led.islit():
+				changeLights(change_type, 'black')
+			else:
+				changeLights(change_type, self.color)
+			return True
+		if payload == 'off':
+			dprint('off')
+			changeLights(change_type, 'black')
 			return True
 		if payload == 'on':
-			print('on')
-			self.led.color = self.color
+			dprint('on')
+			changeLights(change_type, self.color)
 			return True
 		if payload == 'stop':
-			print('stop')
+			dprint('stop')
 			self.led.color = self.led.color
 			return True
 
-		change_type = LightChanges.transition
 		if 'pulse' in payload:
-			payload = payload.replace('pulse', '')
+			payload = payload.replace('pulse', '').replace(' ', '')
 			if payload == '':
 				payload = self.color
 			change_type = LightChanges.pulse
 
 		elif 'rainbow' in payload:
 			change_type = LightChanges.rainbow
-			payload = 'black'
 
 		#handle color
 		self.thread = Thread(target=self.changeLights, args=(change_type, payload), daemon=True)
@@ -76,20 +84,20 @@ class LED:
 			color = Color(payload)
 		except ValueError:
 			return False
-		print('change type {} to {}{}{}'.format(type, color, color.rgb, Color('white')))
+		dprint('change type {} to {}{}{}'.format(type, color, color.rgb, Color('white')))
 		switcher = {
 			LightChanges.instant: self.setColor,
 			LightChanges.transition: self.chgTrans,
 			LightChanges.pulse: self.chgPulse,
 			LightChanges.rainbow: self.chgRain
 		}
-		switcher.get(type, lambda x: print('invalid input'))(color)
+		switcher.get(type, lambda x: dprint('invalid input'))(color)
 		return True
 
 	def setColor(self, color):
 		self.color = color
 		self.led.color = Color(tuple(self.bright*x for x in self.color))
-		print('set color to {}{}{}'.format(color, color.rgb, Color('white')))
+		dprint('set color to {}{}{}'.format(color, color.rgb, Color('white')))
 
 	def chgTrans(self, new_color):
 		N = REFRESH_RATE * TRANSITION_DURATION
@@ -110,11 +118,11 @@ class LED:
 		self.setColor(new_color)
 
 	def chgPulse(self, color):
-		print('pulsing on {}{}{}'.format(color, color.rgb, Color('white')))
+		dprint('pulsing on {}{}{}'.format(color, color.rgb, Color('white')))
 		self.led.pulse(fade_in_time=FADE_DURATION, fade_out_time=FADE_DURATION, on_color=color)
 
 	def chgRain(self, _):
-		print('running rainbow')
+		dprint('running rainbow')
 		freq1, freq2, freq3 = .03, .03, .03
 		ph1, ph2, ph3 = 0, 2, 4
 		center, width = 128, 127
@@ -134,3 +142,7 @@ class LED:
 		self.stop_thread = True
 		self.thread.join()
 		self.stop_thread = False
+
+	def dprint(self, text):
+		if self.debug:
+			print(text)
