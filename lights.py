@@ -24,14 +24,14 @@ class LED:
 		self.bright = 1
 		self.thread = Thread()
 		self.stop_thread = False
-		self.changeLights(LightChanges.instant, 'white')
 		self.debug = debug
+		self.changeLights(LightChanges.instant, 'white')
 		self.dprint('lights init')
 
 	def handle(self, payload):
 		#handle brightness
 		if payload in LED_bright_terms:
-			self.dprint('brightness')
+			self.dprint('brightness to {}'.format(payload))
 			self.bright = LED_bright_terms[payload]
 			self.changeLights(LightChanges.instant, self.color)
 			return True
