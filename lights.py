@@ -26,41 +26,41 @@ class LED:
 		self.stop_thread = False
 		self.changeLights(LightChanges.instant, 'white')
 		self.debug = debug
-		dprint('lights init')
+		self.dprint('lights init')
 
 	def handle(self, payload):
 		#handle brightness
 		if payload in LED_bright_terms:
-			dprint('brightness')
+			self.dprint('brightness')
 			self.bright = LED_bright_terms[payload]
 			self.changeLights(LightChanges.instant, self.color)
 			return True
 
 		#kill old thread
 		if self.thread.is_alive():
-			dprint('stop thread')
+			self.dprint('stop thread')
 			self.killThread()
 
 
 		change_type = LightChanges.transition
 		#handle toggle/on/off/stop
 		if payload == 'toggle':
-			dprint('toggle')
+			self.dprint('toggle')
 			if self.led.islit():
 				changeLights(change_type, 'black')
 			else:
 				changeLights(change_type, self.color)
 			return True
 		if payload == 'off':
-			dprint('off')
+			self.dprint('off')
 			changeLights(change_type, 'black')
 			return True
 		if payload == 'on':
-			dprint('on')
+			self.dprint('on')
 			changeLights(change_type, self.color)
 			return True
 		if payload == 'stop':
-			dprint('stop')
+			self.dprint('stop')
 			self.led.color = self.led.color
 			return True
 
@@ -84,20 +84,20 @@ class LED:
 			color = Color(payload)
 		except ValueError:
 			return False
-		dprint('change type {} to {}{}{}'.format(type, color, color.rgb, Color('white')))
+		self.dprint('change type {} to {}{}{}'.format(type, color, color.rgb, Color('white')))
 		switcher = {
 			LightChanges.instant: self.setColor,
 			LightChanges.transition: self.chgTrans,
 			LightChanges.pulse: self.chgPulse,
 			LightChanges.rainbow: self.chgRain
 		}
-		switcher.get(type, lambda x: dprint('invalid input'))(color)
+		switcher.get(type, lambda x: self.dprint('invalid input'))(color)
 		return True
 
 	def setColor(self, color):
 		self.color = color
 		self.led.color = Color(tuple(self.bright*x for x in self.color))
-		dprint('set color to {}{}{}'.format(color, color.rgb, Color('white')))
+		self.dprint('set color to {}{}{}'.format(color, color.rgb, Color('white')))
 
 	def chgTrans(self, new_color):
 		N = REFRESH_RATE * TRANSITION_DURATION
@@ -118,11 +118,11 @@ class LED:
 		self.setColor(new_color)
 
 	def chgPulse(self, color):
-		dprint('pulsing on {}{}{}'.format(color, color.rgb, Color('white')))
+		self.dprint('pulsing on {}{}{}'.format(color, color.rgb, Color('white')))
 		self.led.pulse(fade_in_time=FADE_DURATION, fade_out_time=FADE_DURATION, on_color=color)
 
 	def chgRain(self, _):
-		dprint('running rainbow')
+		self.dprint('running rainbow')
 		freq1, freq2, freq3 = .03, .03, .03
 		ph1, ph2, ph3 = 0, 2, 4
 		center, width = 128, 127
