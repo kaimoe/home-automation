@@ -47,17 +47,17 @@ class LED:
 		if payload == 'toggle':
 			self.dprint('toggle')
 			if self.led.is_lit:
-				changeLights(change_type, 'black')
+				self.changeLights(change_type, 'black')
 			else:
-				changeLights(change_type, self.color)
+				self.changeLights(change_type, self.color)
 			return True
 		if payload == 'off':
 			self.dprint('off')
-			changeLights(change_type, 'black')
+			self.changeLights(change_type, 'black')
 			return True
 		if payload == 'on':
 			self.dprint('on')
-			changeLights(change_type, self.color)
+			self.changeLights(change_type, self.color)
 			return True
 		if payload == 'stop':
 			self.dprint('stop')
