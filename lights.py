@@ -46,7 +46,7 @@ class LED:
 		#handle toggle/on/off/stop
 		if payload == 'toggle':
 			self.dprint('toggle')
-			if self.led.islit():
+			if self.led.is_lit:
 				changeLights(change_type, 'black')
 			else:
 				changeLights(change_type, self.color)
