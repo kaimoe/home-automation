@@ -75,6 +75,7 @@ class LED:
 			change_type = LightChanges.rainbow
 
 		#handle color
+		color = payload
 		self.thread = Thread(target=self.changeLights, args=(change_type, color), daemon=True)
 		self.thread.start()
 		return True
