@@ -80,7 +80,6 @@ class LED:
 		return True
 
 	def changeLights(self, type, color='black'):
-		color = 0
 		try:
 			color = Color(color)
 		except ValueError:
