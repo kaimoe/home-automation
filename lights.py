@@ -41,7 +41,7 @@ class LED:
 			self.dprint('stop thread')
 			self.killThread()
 
-
+		color = ''
 		change_type = LightChanges.transition
 		#handle toggle/on/off/stop
 		if payload == 'toggle':
@@ -65,23 +65,24 @@ class LED:
 			return True
 
 		if 'pulse' in payload:
-			payload = payload.replace('pulse', '').replace(' ', '')
-			if payload == '':
-				payload = self.color
+			color = payload.replace('pulse', '').replace(' ', '')
+			if color == '':
+				color = self.color
 			change_type = LightChanges.pulse
 
 		elif 'rainbow' in payload:
+			color = 'black'
 			change_type = LightChanges.rainbow
 
 		#handle color
-		self.thread = Thread(target=self.changeLights, args=(change_type, payload), daemon=True)
+		self.thread = Thread(target=self.changeLights, args=(change_type, color), daemon=True)
 		self.thread.start()
 		return True
 
-	def changeLights(self, type, payload='black'):
+	def changeLights(self, type, color='black'):
 		color = 0
 		try:
-			color = Color(payload)
+			color = Color(color)
 		except ValueError:
 			return False
 		self.dprint('change type {} to {}{}{}'.format(type, color, color.rgb, Color('white')))
