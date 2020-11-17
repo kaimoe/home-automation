@@ -5,10 +5,17 @@ import asyncio
 from time import sleep
 from threading import Thread
 from math import sin
+from datetime import datetime
 
 REFRESH_RATE = 30
 TRANSITION_DURATION = 1
 FADE_DURATION = 5
+
+DEFAULT_COLOR = 'purple'
+
+AUTODIM = True
+DIM_START_HOUR = 0
+DIM_END_HOUR = 12
 
 LED_bright_terms = {
 	'bright': 1.0, 'full': 1.0,
@@ -19,13 +26,16 @@ LED_bright_terms = {
 LightChanges = Enum('LightChanges', 'instant transition pulse rainbow')
 
 class LED:
-	def __init__(self, red, green, blue, debug=False):
+	def __init__(self, red, green, blue, verbose=False):
 		self.led = RGBLED(red, green, blue)
 		self.bright = 1
 		self.thread = Thread()
 		self.stop_thread = False
-		self.debug = debug
-		self.changeLights(LightChanges.instant, 'white')
+		self.verbose = verbose
+		if AUTODIM:
+			t = Thread(target=self.autoDimming, daemon=True)
+			t.start()
+		self.changeLights(LightChanges.instant, DEFAULT_COLOR)
 		self.dprint('lights init')
 
 	def handle(self, payload):
@@ -33,7 +43,7 @@ class LED:
 		if payload in LED_bright_terms:
 			self.dprint('brightness to {}'.format(payload))
 			self.bright = LED_bright_terms[payload]
-			self.changeLights(LightChanges.instant, self.color)
+			self.changeLights(self.change_type, self.color)
 			return True
 
 		#kill old thread
@@ -86,6 +96,7 @@ class LED:
 		except ValueError:
 			return False
 		self.dprint('change type {} to {}{}{}'.format(type, color, color.rgb, Color('white')))
+		self.change_type = type
 		switcher = {
 			LightChanges.instant: self.setColor,
 			LightChanges.transition: self.chgTrans,
@@ -97,8 +108,14 @@ class LED:
 
 	def setColor(self, color):
 		self.color = color
-		self.led.color = Color(tuple(self.bright*x for x in self.color))
+		self.led.color = applyBright(color)
 		self.dprint('set color to {}{}{}'.format(color, color.rgb, Color('white')))
+
+	def applyBright(self, color):
+		if self.bright == 1:
+			return color
+		else:
+			return Color(tuple(self.bright*x for x in color))
 
 	def chgTrans(self, new_color):
 		N = REFRESH_RATE * TRANSITION_DURATION
@@ -120,6 +137,7 @@ class LED:
 
 	def chgPulse(self, color):
 		self.dprint('pulsing on {}{}{}'.format(color, color.rgb, Color('white')))
+		color = applyBright(color)
 		self.led.pulse(fade_in_time=FADE_DURATION, fade_out_time=FADE_DURATION, on_color=color)
 
 	def chgRain(self, _):
@@ -128,7 +146,7 @@ class LED:
 		ph1, ph2, ph3 = 0, 2, 4
 		center, width = 128, 127
 		#center, width = 230, 25 #for pastels
-		length = 220
+		length = 200
 		while self.stop_thread is not True:
 			for i in range(length):
 				if self.stop_thread is True:
@@ -139,11 +157,31 @@ class LED:
 				self.setColor(Color(red, green, blue))
 				sleep((1/REFRESH_RATE)*2)
 
+	def autoDimming(self):
+		prev_dt = datetime.now()
+		last_dimmed_day = 0
+		last_undimmed_day = 0
+		while True:
+			dt = datetime.now()
+			if (last_dimmed_day != dt.day) and (DIM_START_HOUR < dt.hour < DIM_END_HOUR) and self.bright != 0.25:
+				last_dimmed_day = dt.day
+				self.bright = 0.25
+			elif (last_undimmed_day != dt.day) and (dt.hour < DIM_START_HOUR or dt.hour > DIM_END_HOUR) and self.bright != 1:
+				last_undimmed_day = dt.day
+				self.bright = 1
+			else:
+				sleep(60000)
+				pass
+
+			if self.led.is_lit:
+				self.changeLights(self.change_type, self.color)
+			sleep(60000)
+
 	def killThread(self):
 		self.stop_thread = True
 		self.thread.join()
 		self.stop_thread = False
 
 	def dprint(self, text):
-		if self.debug:
+		if self.verbose:
 			print(text)

@@ -5,7 +5,7 @@ LED_RED = 27
 LED_GREEN = 22
 LED_BLUE = 17
 
-DEBUG = False
+VERBOSE = False
 #--------------------#
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
@@ -16,7 +16,7 @@ from lights import LED
 paths = ['/lights']
 
 def initHandler(handler_class):
-	handler_class.led = LED(LED_RED, LED_GREEN, LED_BLUE, DEBUG)
+	handler_class.led = LED(LED_RED, LED_GREEN, LED_BLUE, VERBOSE)
 	return handler_class
 
 class S(BaseHTTPRequestHandler):
