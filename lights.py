@@ -71,7 +71,7 @@ class LED:
 			self.led.color = self.led.color
 			return True
 
-		color = ''
+		color = payload
 		if 'pulse' in payload:
 			color = payload.replace('pulse', '').replace(' ', '')
 			if color == '':
