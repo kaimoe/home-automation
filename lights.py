@@ -39,6 +39,9 @@ class LED:
 		self.dprint('lights init')
 
 	def handle(self, payload):
+		#kill old thread
+		self.killThread()
+
 		#handle brightness
 		if payload in LED_bright_terms:
 			self.dprint('brightness to {}'.format(payload))
@@ -46,12 +49,6 @@ class LED:
 			self.changeLights(self.change_type, self.color)
 			return True
 
-		#kill old thread
-		if self.thread.is_alive():
-			self.dprint('stop thread')
-			self.killThread()
-
-		color = ''
 		change_type = LightChanges.transition
 		#handle toggle/on/off/stop
 		if payload == 'toggle':
@@ -74,6 +71,7 @@ class LED:
 			self.led.color = self.led.color
 			return True
 
+		color = ''
 		if 'pulse' in payload:
 			color = payload.replace('pulse', '').replace(' ', '')
 			if color == '':
@@ -173,10 +171,14 @@ class LED:
 				pass
 
 			if self.led.is_lit:
+				self.killThread()
 				self.changeLights(self.change_type, self.color)
 			sleep(60000)
 
 	def killThread(self):
+		if self.thread.is_alive() is not True:
+			return
+		self.dprint('stop thread')
 		self.stop_thread = True
 		self.thread.join()
 		self.stop_thread = False
