@@ -159,11 +159,11 @@ class LED:
 		last_undimmed_day = 0
 		while True:
 			dt = datetime.now()
-			if (last_dimmed_day != dt.day) and (DIM_START_HOUR < dt.hour < DIM_END_HOUR) and self.bright != 0.25:
+			if (last_dimmed_day != dt.day) and (DIM_START_HOUR <= dt.hour < DIM_END_HOUR) and self.bright != 0.25:
 				self.dprint('auto-dimming')
 				last_dimmed_day = dt.day
 				self.bright = 0.25
-			elif (last_undimmed_day != dt.day) and (dt.hour < DIM_START_HOUR or dt.hour > DIM_END_HOUR) and self.bright != 1:
+			elif (last_undimmed_day != dt.day) and (dt.hour < DIM_START_HOUR or dt.hour >= DIM_END_HOUR) and self.bright != 1:
 				self.dprint('auto-undimming')
 				last_undimmed_day = dt.day
 				self.bright = 1
