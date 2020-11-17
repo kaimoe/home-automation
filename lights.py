@@ -155,7 +155,6 @@ class LED:
 				sleep((1/REFRESH_RATE)*2)
 
 	def autoDimming(self):
-		prev_dt = datetime.now()
 		last_dimmed_day = 0
 		last_undimmed_day = 0
 		while True:
@@ -168,7 +167,7 @@ class LED:
 				self.bright = 1
 			else:
 				sleep(60000)
-				pass
+				continue
 
 			if self.led.is_lit:
 				self.killThread()
