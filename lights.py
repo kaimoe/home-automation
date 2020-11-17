@@ -79,21 +79,20 @@ class LED:
 			if color == '':
 				color = self.color
 			change_type = LightChanges.pulse
-
-		elif 'rainbow' in payload:
+		elif 'rain' in payload:
 			color = 'black'
 			change_type = LightChanges.rainbow
 
 		#handle color
-		color = payload
 		self.thread = Thread(target=self.changeLights, args=(change_type, color), daemon=True)
 		self.thread.start()
 		return True
 
-	def changeLights(self, type, color='black'):
+	def changeLights(self, type, colortext='black'):
 		try:
-			color = Color(color)
+			color = Color(colortext)
 		except ValueError:
+			self.dprint('error while trying to parse {}'.format(colortext))
 			return False
 		self.dprint('change type {} to {}{}{}'.format(type, color, color.rgb, Color('white')))
 		self.change_type = type
