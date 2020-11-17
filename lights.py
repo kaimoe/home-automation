@@ -108,7 +108,7 @@ class LED:
 
 	def setColor(self, color):
 		self.color = color
-		self.led.color = applyBright(color)
+		self.led.color = self.applyBright(color)
 		self.dprint('set color to {}{}{}'.format(color, color.rgb, Color('white')))
 
 	def applyBright(self, color):
@@ -137,7 +137,7 @@ class LED:
 
 	def chgPulse(self, color):
 		self.dprint('pulsing on {}{}{}'.format(color, color.rgb, Color('white')))
-		color = applyBright(color)
+		color = self.applyBright(color)
 		self.led.pulse(fade_in_time=FADE_DURATION, fade_out_time=FADE_DURATION, on_color=color)
 
 	def chgRain(self, _):
