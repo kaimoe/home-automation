@@ -168,13 +168,13 @@ class LED:
 				last_undimmed_day = dt.day
 				self.bright = 1
 			else:
-				sleep(60000)
+				sleep(60)
 				continue
 
 			if self.led.is_lit:
 				self.killThread()
 				self.changeLights(self.change_type, self.color)
-			sleep(60000)
+			sleep(60)
 
 	def killThread(self):
 		if self.thread.is_alive() is not True:
