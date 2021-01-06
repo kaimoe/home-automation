@@ -103,9 +103,9 @@ class LED:
 		switcher.get(type, lambda x: self.dprint('invalid input'))(color)
 		return True
 
-	def setColor(self, color):
+	def setColor(self, color, ignore_bright=False):
 		self.color = color
-		self.led.color = self.applyBright(color)
+		self.led.color = self.applyBright(color) if ignore_bright is False else color
 		self.dprint('set color to {}{}{}'.format(color, color.rgb, Color('white')))
 
 	def applyBright(self, color):
@@ -114,8 +114,8 @@ class LED:
 		else:
 			return Color(tuple(self.bright*x for x in color))
 
-	def chgTrans(self, new_color):
-		N = REFRESH_RATE * TRANSITION_DURATION
+	def chgTrans(self, new_color, ignore_bright=False, duration=TRANSITION_DURATION):
+		N = REFRESH_RATE * duration
 		#total color difference
 		diff = []
 		for n, c in zip(new_color, self.led.color):
@@ -128,9 +128,9 @@ class LED:
 			step_color = []
 			for c, s in zip(self.color, step):
 				step_color.append(c+s)
-			self.setColor(Color(tuple(step_color)))
+			self.setColor(Color(tuple(step_color)), ignore_bright)
 			sleep(1/REFRESH_RATE)
-		self.setColor(new_color)
+		self.setColor(new_color, ignore_bright)
 
 	def chgPulse(self, color):
 		self.dprint('pulsing on {}{}{}'.format(color, color.rgb, Color('white')))
@@ -173,7 +173,10 @@ class LED:
 
 			if self.led.is_lit:
 				self.killThread()
-				self.changeLights(self.change_type, self.color)
+				if self.change_type == LightChanges.transition:
+					self.chgTrans(applyBright(self.color), ignore_bright=True, duration=3)
+				else:
+					self.changeLights(self.change_type, self.color)
 			sleep(60)
 
 	def killThread(self):
