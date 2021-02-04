@@ -4,15 +4,12 @@
 
 ### LED Lighting
 
-- jasper-client to recognize voice command and invoke server with color name
-- python http server to take color name and adjust GPIO outputs to respective color, keep track of state/dimming, and apply effects
+- Two different http servers to control SMD5050 LED strip with certain colors, keep track of auto-dimming, etc:
+  - Arduino (MKR series tested, all WiFiNINA-compatible boards should work) project
+  - Python version intended to work on any Raspberry Pi board
+- jasper-client to recognize voice command and invoke server with color name (abandoned)
 
 ### Presence detection
 
-- server queries bluetooth/wi-fi clients and keeps track of presence. triggers actions upon return/absence
+- Server queries bluetooth/wi-fi clients and keeps track of presence. triggers actions upon return/absence (planned)
 
-https://gpiozero.readthedocs.io/en/stable/api_output.html#rgbled
-https://gpiozero.readthedocs.io/en/stable/recipes.html#full-color-led
-https://www.w3.org/TR/css-color-3/#svg-color
-https://jasperproject.github.io/documentation/
-https://krazydad.com/tutorials/makecolors.php
