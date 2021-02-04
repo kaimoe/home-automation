@@ -1,6 +1,6 @@
 //RGB settings
 const int REFRESH_RATE = 30;
-const int TRANSITION_DURATION = 2;
+const int TRANSITION_DURATION = 1;
 const int FADE_DURATION = 5;
 
 
@@ -11,7 +11,9 @@ struct RGB {
 };
 
 RGB color;
+RGB output;
 float bright = 1.0;
+
 
 const String color_names[16] = {
 	"white",
@@ -51,8 +53,11 @@ const int color_codes[16] = {
 	0x800080
 };
 
-int roundToInt(float f) {
-	return (int) f + 0.5;
+bool rgbIsLit() {
+	if ((output.r + output.g + output.b) == 0) {
+		return false;
+	}
+	return true;
 }
 
 RGB applyBright(RGB &rgb) {
@@ -63,13 +68,14 @@ RGB applyBright(RGB &rgb) {
 	}
 }
 
-void outputColor(RGB &rgb) {
+void outputColor(RGB rgb) {
 	Serial.print("Outputting ");
 	Serial.print(rgb.r);
 	Serial.print(" ");
 	Serial.print(rgb.g);
 	Serial.print(" ");
 	Serial.println(rgb.b);
+	output = rgb;
   analogWrite(RED_PIN, rgb.r);
   analogWrite(GREEN_PIN, rgb.g);
   analogWrite(BLUE_PIN, rgb.b);
@@ -132,9 +138,9 @@ void chgTrans(RGB new_color) {
 	int N = REFRESH_RATE * TRANSITION_DURATION;
 
 	RGB step;
-	step.r = (new_color.r - color.r) / float(N);
-	step.g = (new_color.g - color.g) / float(N);
-	step.b = (new_color.b - color.b) / float(N);
+	step.r = (new_color.r - output.r) / float(N);
+	step.g = (new_color.g - output.g) / float(N);
+	step.b = (new_color.b - output.b) / float(N);
 
 	RGB step_color;
 	for (int i = 0; i < N; i++) {
@@ -147,12 +153,69 @@ void chgTrans(RGB new_color) {
 	setColor(new_color);
 }
 
+enum LightChanges {Instant, Transition, Pulse};
+
+void changeLights(LightChanges change, RGB rgb) {
+	switch(change) {
+		case Instant:
+			setColor(rgb);
+			break;
+		case Transition:
+			chgTrans(rgb);
+			break;
+	}
+}
+
 void handlePayload(String payload) {
+	payload.toLowerCase();
+	LightChanges change_type = Transition;
+	//handle brightness
+	float b = fetchBrightness(payload);
+	if (b != -1.0) {
+		Serial.print("Setting bright ");
+		Serial.println(b);
+		bright = b;
+		changeLights(change_type, color);
+		return;
+	}
+
+
+	//handle toggle/on/off
+	if (payload == "toggle") {
+		Serial.println("Toggling");
+		if (rgbIsLit()) {
+			outputColor(hexToRGB(0));
+		} else {
+			changeLights(change_type, color);
+		}
+		return;
+	}
+	if (payload == "off") {
+		Serial.println("Switch off");
+		outputColor(hexToRGB(0));
+	}
+	if (payload == "on") {
+		Serial.println("Switch on");
+		changeLights(change_type, color);
+	}
+
+
+	/*//handle pulse
+	int code;
+	if (payload.indexOf("pulse") != -1) {
+		payload = payload.replace("pulse", "").replace(" ", "");
+		if (payload == "") {
+			code = 0;
+		}
+		change_type = Pulse;
+	}*/
+
+	//handle color
 	int code = fetchColorCode(payload);
 	if (code == -1) {
 		Serial.print("Payload not recognized: ");
 		Serial.println(payload);
 		return;
 	}
-	chgTrans(hexToRGB(code));
+	changeLights(change_type, hexToRGB(code));
 }
