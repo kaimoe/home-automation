@@ -60,7 +60,7 @@ bool rgbIsLit() {
 	return true;
 }
 
-RGB applyBright(RGB &rgb) {
+void applyBright(RGB &rgb) {
 	if (bright != 1.0) {
 		rgb.r = rgb.r * bright;
 		rgb.g = rgb.g * bright;
@@ -218,4 +218,27 @@ void handlePayload(String payload) {
 		return;
 	}
 	changeLights(change_type, hexToRGB(code));
+}
+
+void autoDimming() {
+	if (++dim_counter < dim_counter_max) return;
+	else dim_counter = 0;
+
+	//time-based dimming
+	int day = rtc.getDay();
+	int hour = rtc.getHours() + GMT;
+	if ((last_dimmed_day != day) && (DIM_START_HOUR <= hour < DIM_END_HOUR) && (bright != 0.25)) {
+		Serial.println("Auto-dimming");
+		last_dimmed_day = day;
+		bright = 0.25;
+	} else if ((last_undimmed_day != day) && (hour < DIM_START_HOUR || hour >= DIM_END_HOUR) && bright != 1) {
+		Serial.println("Auto-undimming");
+		last_undimmed_day = day;
+		bright = 1;
+	} else return;
+	if (rgbIsLit()) {
+		RGB c = color;
+		applyBright(c);
+		changeLights(Transition, c);
+	}
 }

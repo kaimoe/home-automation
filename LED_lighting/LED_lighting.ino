@@ -7,26 +7,31 @@
 #include "arduino_secrets.h"
 
 RTCZero rtc;
+const int GMT = 2; //change this to adapt it to your time zone
 
 //RGB pins
 const int RED_PIN = 3;
 const int GREEN_PIN = 4;
 const int BLUE_PIN = 5;
-#include "led_handling.h"
 
-const String DEFAULT_COLOR = "white";
+const char DEFAULT_COLOR[] = "purple";
 
 const bool AUTODIM = true;
 const int DIM_START_HOUR = 0;
 const int DIM_END_HOUR = 12;
+int last_dimmed_day = 0;
+int last_undimmed_day = 0;
+const int dim_counter_max = 100;
+int dim_counter = dim_counter_max;
+
+#include "led_handling.h"
+
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
 char ssid[] = SECRET_SSID;        // your network SSID (name)
 char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;                           // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
-
-const int GMT = 2; //change this to adapt it to your time zone
 
 WiFiServer server(80);
 
