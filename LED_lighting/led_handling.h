@@ -180,7 +180,7 @@ void handlePayload(String payload) {
 	if (payload == "toggle") {
 		Serial.println("Toggling");
 		if (rgbIsLit()) {
-			setColor(hexToRGB(0));
+			chgTrans(hexToRGB(0));
 		} else {
 			changeLights(change_type, color);
 		}
@@ -188,7 +188,7 @@ void handlePayload(String payload) {
 	}
 	if (payload == "off") {
 		Serial.println("Switch off");
-		setColor(hexToRGB(0));
+		chgTrans(hexToRGB(0));
 	}
 	if (payload == "on") {
 		Serial.println("Switch on");
