@@ -1,7 +1,7 @@
 //RGB settings
-const int REFRESH_RATE = 30;
-const int TRANSITION_DURATION = 1;
-const int FADE_DURATION = 5;
+#define REFRESH_RATE 30
+#define TRANSITION_DURATION 1
+#define FADE_DURATION 5
 
 
 struct RGB {
@@ -68,7 +68,7 @@ void applyBright(RGB &rgb) {
 	}
 }
 
-void outputColor(RGB rgb) {
+void setColor(RGB rgb) {
 	Serial.print("Outputting ");
 	Serial.print(rgb.r);
 	Serial.print(" ");
@@ -79,12 +79,6 @@ void outputColor(RGB rgb) {
   analogWrite(RED_PIN, rgb.r);
   analogWrite(GREEN_PIN, rgb.g);
   analogWrite(BLUE_PIN, rgb.b);
-}
-
-void setColor(RGB rgb) {
-	color = rgb;
-	applyBright(rgb);
-	outputColor(rgb);
 }
 
 float fetchBrightness(String &s) {
@@ -144,9 +138,9 @@ void chgTrans(RGB new_color) {
 
 	RGB step_color;
 	for (int i = 0; i < N; i++) {
-		step_color.r = color.r + step.r;
-		step_color.g = color.g + step.g;
-		step_color.b = color.b + step.b;
+		step_color.r = output.r + step.r;
+		step_color.g = output.g + step.g;
+		step_color.b = output.b + step.b;
 		setColor(step_color);
 		delay((1/float(REFRESH_RATE))*1000);
 	}
@@ -156,6 +150,8 @@ void chgTrans(RGB new_color) {
 enum LightChanges {Instant, Transition, Pulse};
 
 void changeLights(LightChanges change, RGB rgb) {
+	color = rgb;
+	applyBright(rgb);
 	switch(change) {
 		case Instant:
 			setColor(rgb);
@@ -184,7 +180,7 @@ void handlePayload(String payload) {
 	if (payload == "toggle") {
 		Serial.println("Toggling");
 		if (rgbIsLit()) {
-			outputColor(hexToRGB(0));
+			setColor(hexToRGB(0));
 		} else {
 			changeLights(change_type, color);
 		}
@@ -192,7 +188,7 @@ void handlePayload(String payload) {
 	}
 	if (payload == "off") {
 		Serial.println("Switch off");
-		outputColor(hexToRGB(0));
+		setColor(hexToRGB(0));
 	}
 	if (payload == "on") {
 		Serial.println("Switch on");
@@ -231,14 +227,12 @@ void autoDimming() {
 		Serial.println("Auto-dimming");
 		last_dimmed_day = day;
 		bright = 0.25;
-	} else if ((last_undimmed_day != day) && (hour < DIM_START_HOUR || hour >= DIM_END_HOUR) && bright != 1) {
+	} else if ((last_undimmed_day != day) && (hour < DIM_START_HOUR || hour >= DIM_END_HOUR) && (bright != 1.0)) {
 		Serial.println("Auto-undimming");
 		last_undimmed_day = day;
-		bright = 1;
+		bright = 1.0;
 	} else return;
 	if (rgbIsLit()) {
-		RGB c = color;
-		applyBright(c);
-		changeLights(Transition, c);
+		changeLights(Transition, color);
 	}
 }

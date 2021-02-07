@@ -7,29 +7,32 @@
 #include "arduino_secrets.h"
 
 RTCZero rtc;
-const int GMT = 2; //change this to adapt it to your time zone
+const int GMT = 2; //set to local timezone offset
 
 //RGB pins
-const int RED_PIN = 3;
-const int GREEN_PIN = 4;
-const int BLUE_PIN = 5;
+#define RED_PIN 4
+#define GREEN_PIN 5
+#define BLUE_PIN 3
+//time in ms between loops
+#define LOOP_DELAY 10
 
 const char DEFAULT_COLOR[] = "purple";
 
+//autodim settings
 const bool AUTODIM = true;
 const int DIM_START_HOUR = 0;
 const int DIM_END_HOUR = 12;
 int last_dimmed_day = 0;
 int last_undimmed_day = 0;
-const int dim_counter_max = 100;
+//number of loop cycles to check for dimming changes
+const int dim_counter_max = 1000;
 int dim_counter = dim_counter_max;
 
 #include "led_handling.h"
 
-///////please enter your sensitive data in the Secret tab/arduino_secrets.h
-char ssid[] = SECRET_SSID;        // your network SSID (name)
-char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
-int keyIndex = 0;                           // your network key Index number (needed only for WEP)
+//enter in the Secret tab/arduino_secrets.h
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
 
 int status = WL_IDLE_STATUS;
 
@@ -63,7 +66,7 @@ void setup() {
 	rtc.begin();
 
 	unsigned long epoch;
-	int numberOfTries = 0, maxTries = 10;
+	int numberOfTries = 0, maxTries = 20;
 
 	do {
 		epoch = WiFi.getTime();
@@ -72,7 +75,12 @@ void setup() {
 
 	if (numberOfTries == maxTries) {
 		Serial.print("NTP unreachable!!");
-		while (1);
+		while (1) {
+			handlePayload("red");
+			delay(5000);
+			handlePayload("black");
+			delay(5000);
+		}
 	} else {
 		Serial.print("Epoch received: ");
 		Serial.println(epoch);
@@ -84,6 +92,8 @@ void setup() {
 }
 
 void loop() {
+	if (AUTODIM) autoDimming();
+
 	WiFiClient client = server.available();
 
 	if (client) {
@@ -113,7 +123,7 @@ void loop() {
 					// The HTTP response ends with another blank line:
 					client.println();
 
-
+					//pattern match the payload
 					char temp[100];
 					strcpy(temp, currentLine.c_str());
 					MatchState ms;
@@ -139,39 +149,7 @@ void loop() {
 		client.stop();
 		Serial.println("client disonnected\n");
 	}
-	delay(10);
-}
-
-void printTime()
-{
-
-	print2digits(rtc.getHours() + GMT);
-
-	Serial.print(":");
-
-	print2digits(rtc.getMinutes());
-
-	Serial.print(":");
-
-	print2digits(rtc.getSeconds());
-
-	Serial.println();
-}
-
-void printDate()
-{
-
-	Serial.print(rtc.getDay());
-
-	Serial.print("/");
-
-	Serial.print(rtc.getMonth());
-
-	Serial.print("/");
-
-	Serial.print(rtc.getYear());
-
-	Serial.print(" ");
+	delay(LOOP_DELAY);
 }
 
 void printWiFiStatus() {
@@ -199,15 +177,4 @@ void printWiFiStatus() {
 	Serial.print(rssi);
 
 	Serial.println(" dBm");
-}
-
-void print2digits(int number) {
-
-	if (number < 10) {
-
-		Serial.print("0");
-
-	}
-
-	Serial.print(number);
 }
