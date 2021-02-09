@@ -221,9 +221,14 @@ void autoDimming() {
 	else dim_counter = 0;
 
 	//time-based dimming
-	int day = rtc.getDay();
 	int hour = rtc.getHours() + GMT;
-	if ((last_dimmed_day != day) && (DIM_START_HOUR <= hour < DIM_END_HOUR) && (bright != 0.25)) {
+	int day = rtc.getDay();
+	if (hour >= 24) {
+		hour -= 24;
+		day++;
+	}
+
+	if ((last_dimmed_day != day) && (DIM_START_HOUR <= hour) && (hour < DIM_END_HOUR) && (bright != 0.25)) {
 		Serial.println("Auto-dimming");
 		last_dimmed_day = day;
 		bright = 0.25;

@@ -25,7 +25,7 @@ const int DIM_END_HOUR = 12;
 int last_dimmed_day = 0;
 int last_undimmed_day = 0;
 //number of loop cycles to check for dimming changes
-const int dim_counter_max = 1000;
+const int dim_counter_max = 6000;
 int dim_counter = dim_counter_max;
 
 #include "led_handling.h"
