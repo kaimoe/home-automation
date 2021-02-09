@@ -113,16 +113,6 @@ void loop() {
 				}
 
 				if (client.peek() == -1) {//end of request
-					client.println("HTTP/1.1 200 OK");
-					client.println("Content-type:text/plain");
-					client.println();
-
-					// the content of the HTTP response follows the header:
-					client.print("");
-
-					// The HTTP response ends with another blank line:
-					client.println();
-
 					//pattern match the payload
 					char temp[100];
 					strcpy(temp, currentLine.c_str());
@@ -130,10 +120,14 @@ void loop() {
 					ms.Target(temp);
 					char result = ms.Match("{\"payload\"[:%s]+\"([%a%s]+)\"}", 0);
 
+					bool success = true;
 					if (result == REGEXP_NOMATCH) {
 						Serial.println("No match");
-						break;
+						success = false;
 					}
+
+					sendResponse(client, success);
+					if (!success) break;
 
 					char payload[30];
 					ms.GetCapture(payload, 0);
@@ -150,6 +144,15 @@ void loop() {
 		Serial.println("client disonnected\n");
 	}
 	delay(LOOP_DELAY);
+}
+
+void sendResponse(WiFiClient &client, bool success) {
+	client.print("HTTP/1.1 ");
+	client.print(success ? "200 OK" : "400 Bad Request");
+	client.println(" \nContent-type:text/plain\n");
+
+	// the content of the HTTP response follows the header:
+	client.println("");
 }
 
 void printWiFiStatus() {
