@@ -1,0 +1,5 @@
+polka dot:
+  2 days, slightly moist: avg 1.9111722244897964
+
+kalanchoe:
+  5 days, slightly moist: avg 1.563890816326531
