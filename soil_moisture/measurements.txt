@@ -1,5 +1,9 @@
 polka dot:
+  just watered: avg 1.923099041666667-2.0099973023255817
   2 days, slightly moist: avg 1.9111722244897964
+  3 days, fairly dry: avg 1.7596293200000006
 
 kalanchoe:
+  just watered: avg 1.9205813124999997
   5 days, slightly moist: avg 1.563890816326531
+  9 days, dry: avg 1.38640388
